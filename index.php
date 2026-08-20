@@ -77,8 +77,7 @@ unset($_SESSION['error']);
                         id="icNumber"
                         name="icNumber"
                         placeholder="e.g. 010203-08-1099"
-                        required
-                    >
+                        required>
 
                     <small class="text-muted">
                         Format: XXXXXX-XX-XXXX
@@ -98,8 +97,7 @@ unset($_SESSION['error']);
                         id="email"
                         name="email"
                         placeholder="example@email.com"
-                        required
-                    >
+                        required>
                 </div>
 
 
@@ -115,8 +113,7 @@ unset($_SESSION['error']);
                         id="phone"
                         name="phone"
                         placeholder="e.g. 012-3456789"
-                        required
-                    >
+                        required>
 
                     <small class="text-muted">
                         Format: 01X-xxxxxxx
