@@ -2,66 +2,65 @@
 
 session_start();
 
-/*
-    Function untuk validate IC dan Phone
-*/
-function validateFormat($icNumber, $phone)
+
+// ==========================================
+// FUNCTION 1: VALIDATE IC NUMBER
+// Format: XXXXXX-XX-XXXX
+// ==========================================
+
+function validateIC($ic)
 {
-    $icPattern = "/^[0-9]{6}-[0-9]{2}-[0-9]{4}$/";
-    $phonePattern = "/^01[0-9]-[0-9]{7,8}$/";
-
-    if (!preg_match($icPattern, $icNumber)) {
-        return "Invalid IC Number format. Please use XXXXXX-XX-XXXX.";
-    }
-
-    if (!preg_match($phonePattern, $phone)) {
-        return "Invalid Phone Number format. Please use 01X-XXXXXXX.";
-    }
-
-    return "";
+    return preg_match('/^\d{6}-\d{2}-\d{4}$/', $ic);
 }
 
 
-/*
-    Function untuk calculate booking cost
-*/
+// ==========================================
+// FUNCTION 2: VALIDATE PHONE NUMBER
+// Format: 01X-xxxxxxx
+// ==========================================
+
+function validatePhone($phone)
+{
+    return preg_match('/^01\d-\d{7,8}$/', $phone);
+}
+
+
+// ==========================================
+// FUNCTION 3: CALCULATE BOOKING
+// ==========================================
+
 function calculateBooking($package, $duration)
 {
-    switch ($package) {
+    $rates = [
+        "Basic" => 50,
+        "Premium" => 80,
+        "Gold" => 120
+    ];
 
-        case "Basic":
-            $pricePerHour = 50;
-            break;
-
-        case "Premium":
-            $pricePerHour = 80;
-            break;
-
-        case "Gold":
-            $pricePerHour = 120;
-            break;
-
-        default:
-            return 0;
+    if (!isset($rates[$package])) {
+        return 0;
     }
 
-    return $pricePerHour * $duration;
+    return $rates[$package] * $duration;
 }
 
 
-/*
-    Pastikan data dihantar menggunakan POST
-*/
-if ($_SERVER["REQUEST_METHOD"] != "POST") {
+// ==========================================
+// CHECK FORM SUBMISSION
+// ==========================================
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Ambil data daripada form
-*/
+// ==========================================
+// GET FORM DATA
+// ==========================================
+
 $fullName = trim($_POST['fullName'] ?? '');
 $icNumber = trim($_POST['icNumber'] ?? '');
 $email = trim($_POST['email'] ?? '');
@@ -72,104 +71,164 @@ $address = trim($_POST['address'] ?? '');
 $state = trim($_POST['state'] ?? '');
 
 
-/*
-    Validation
-*/
+// ==========================================
+// VALIDATION
+// ==========================================
+
+// Check empty fields
+
 if (
-    $fullName == '' ||
-    $icNumber == '' ||
-    $email == '' ||
-    $phone == '' ||
-    $package == '' ||
-    $duration == '' ||
-    $address == '' ||
-    $state == ''
+    empty($fullName) ||
+    empty($icNumber) ||
+    empty($email) ||
+    empty($phone) ||
+    empty($package) ||
+    empty($duration) ||
+    empty($address) ||
+    empty($state)
 ) {
 
     $_SESSION['error'] = "Please fill in all required fields.";
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Validate email
-*/
+// ==========================================
+// VALIDATE FULL NAME
+// ==========================================
+
+if (strlen($fullName) < 2) {
+
+    $_SESSION['error'] = "Full Name must contain at least 2 characters.";
+
+    header("Location: index.php");
+    exit();
+
+}
+
+
+// ==========================================
+// VALIDATE IC
+// ==========================================
+
+if (!validateIC($icNumber)) {
+
+    $_SESSION['error'] =
+        "Invalid IC Number. Please use format XXXXXX-XX-XXXX.";
+
+    header("Location: index.php");
+    exit();
+
+}
+
+
+// ==========================================
+// VALIDATE EMAIL
+// ==========================================
+
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-    $_SESSION['error'] = "Invalid email address.";
+    $_SESSION['error'] =
+        "Invalid email address.";
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Validate duration
-*/
-if (!is_numeric($duration) || $duration <= 0) {
+// ==========================================
+// VALIDATE PHONE
+// ==========================================
 
-    $_SESSION['error'] = "Duration must be a valid number greater than 0.";
+if (!validatePhone($phone)) {
+
+    $_SESSION['error'] =
+        "Invalid Phone Number. Please use format 01X-xxxxxxx.";
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Validate package
-*/
-$validPackages = ["Basic", "Premium", "Gold"];
+// ==========================================
+// VALIDATE PACKAGE
+// ==========================================
 
-if (!in_array($package, $validPackages)) {
+$allowedPackages = [
+    "Basic",
+    "Premium",
+    "Gold"
+];
 
-    $_SESSION['error'] = "Invalid service package selected.";
+if (!in_array($package, $allowedPackages)) {
+
+    $_SESSION['error'] =
+        "Invalid service package.";
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Validate IC dan Phone menggunakan Regex Function
-*/
-$formatError = validateFormat($icNumber, $phone);
+// ==========================================
+// VALIDATE DURATION
+// ==========================================
 
-if ($formatError != '') {
+if (!filter_var($duration, FILTER_VALIDATE_INT) || $duration < 1) {
 
-    $_SESSION['error'] = $formatError;
+    $_SESSION['error'] =
+        "Duration must be a valid number greater than 0.";
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Calculate total cost
-*/
+// ==========================================
+// CALCULATE TOTAL COST
+// ==========================================
+
 $totalCost = calculateBooking($package, $duration);
 
 
-/*
-    Simpan semua data ke dalam Session
-*/
+// ==========================================
+// STORE DATA IN SESSION
+// ==========================================
+
 $_SESSION['booking'] = [
+
     'fullName' => $fullName,
+
     'icNumber' => $icNumber,
+
     'email' => $email,
+
     'phone' => $phone,
+
     'package' => $package,
+
     'duration' => $duration,
+
     'address' => $address,
+
     'state' => $state,
+
     'totalCost' => $totalCost
+
 ];
 
 
-/*
-    Redirect ke Page 3
-*/
+// ==========================================
+// REDIRECT TO PAGE 3
+// ==========================================
+
 header("Location: profile.php");
 exit();
 

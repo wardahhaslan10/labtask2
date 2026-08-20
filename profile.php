@@ -2,23 +2,29 @@
 
 session_start();
 
-/*
-    Direct Access Prevention
 
-    Jika tiada booking session,
-    redirect kembali ke Page 1.
-*/
+// ==========================================
+// DIRECT ACCESS PREVENTION
+// ==========================================
+
 if (!isset($_SESSION['booking'])) {
 
     header("Location: index.php");
     exit();
+
 }
 
 
-/*
-    Ambil data daripada Session
-*/
+// ==========================================
+// GET BOOKING DATA
+// ==========================================
+
 $booking = $_SESSION['booking'];
+
+
+// ==========================================
+// ASSIGN DATA
+// ==========================================
 
 $fullName = $booking['fullName'];
 $icNumber = $booking['icNumber'];
@@ -31,33 +37,31 @@ $state = $booking['state'];
 $totalCost = $booking['totalCost'];
 
 
-/*
-    Generate Booking ID
-
-    First 4 characters of Name
-    +
-    Last 4 digits of IC
-    +
-    First 2 letters of Package
-*/
-
+// ==========================================
+// GENERATE BOOKING ID
+//
+// First 4 characters of Name
+// +
+// Last 4 digits of IC
+// +
+// First 2 letters of Package
+// ==========================================
 
 $namePart = strtoupper(substr(
-    preg_replace("/[^A-Za-z]/", "", $fullName),
+    preg_replace('/\s+/', '', $fullName),
     0,
     4
 ));
 
 
-$icPart = substr(
-    preg_replace("/[^0-9]/", "", $icNumber),
-    -4
-);
+// Remove '-' from IC
+
+$cleanIC = str_replace("-", "", $icNumber);
+
+$icPart = substr($cleanIC, -4);
 
 
-$packagePart = strtoupper(
-    substr($package, 0, 2)
-);
+$packagePart = strtoupper(substr($package, 0, 2));
 
 
 $bookingID = $namePart . $icPart . $packagePart;
@@ -71,241 +75,222 @@ $bookingID = $namePart . $icPart . $packagePart;
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Booking Profile</title>
 
-    <style>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            margin: 0;
-            background-color: #f4f6f8;
-        }
-
-        .header {
-            background-color: #1f4e78;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-        }
-
-        .header p {
-            margin: 8px 0 0;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 30px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .title {
-            text-align: center;
-            color: #1f4e78;
-            margin-bottom: 25px;
-        }
-
-        .booking-id {
-            text-align: center;
-            background-color: #e8f1f8;
-            padding: 18px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-
-        .booking-id h3 {
-            margin: 0 0 8px;
-            color: #1f4e78;
-        }
-
-        .booking-id p {
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin: 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 13px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            width: 35%;
-            background-color: #f1f1f1;
-        }
-
-        .total {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1f4e78;
-        }
-
-        .logout {
-            display: block;
-            text-align: center;
-            margin-top: 25px;
-            padding: 13px;
-            background-color: #c0392b;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .logout:hover {
-            background-color: #962d22;
-        }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 
 </head>
 
+
 <body>
 
-<div class="header">
 
-    <h1>Service Booking System</h1>
+<header class="header">
 
-    <p>Booking Profile</p>
+    <div class="container">
 
-</div>
+        <h1>Service Booking System</h1>
 
-
-<div class="container">
-
-    <h2 class="title">
-        Booking Summary
-    </h2>
-
-
-    <!-- Booking ID -->
-
-    <div class="booking-id">
-
-        <h3>Booking ID</h3>
-
-        <p>
-            <?php echo htmlspecialchars($bookingID); ?>
-        </p>
+        <p>Booking Profile</p>
 
     </div>
 
-
-    <!-- Customer Information -->
-
-    <table>
-
-        <tr>
-            <th>Full Name</th>
-
-            <td>
-                <?php echo htmlspecialchars($fullName); ?>
-            </td>
-        </tr>
+</header>
 
 
-        <tr>
-            <th>IC Number</th>
-
-            <td>
-                <?php echo htmlspecialchars($icNumber); ?>
-            </td>
-        </tr>
+<div class="container mt-5 mb-5">
 
 
-        <tr>
-            <th>Email</th>
-
-            <td>
-                <?php echo htmlspecialchars($email); ?>
-            </td>
-        </tr>
+    <div class="card booking-card">
 
 
-        <tr>
-            <th>Phone Number</th>
+        <div class="card-header">
 
-            <td>
-                <?php echo htmlspecialchars($phone); ?>
-            </td>
-        </tr>
+            <h3>Booking Summary</h3>
+
+        </div>
 
 
-        <tr>
-            <th>Service Package</th>
-
-            <td>
-                <?php echo htmlspecialchars($package); ?>
-            </td>
-        </tr>
+        <div class="card-body">
 
 
-        <tr>
-            <th>Duration</th>
+            <!-- BOOKING ID -->
 
-            <td>
-                <?php echo htmlspecialchars($duration); ?> hour(s)
-            </td>
-        </tr>
+            <div class="booking-id">
 
+                <p>Booking ID</p>
 
-        <tr>
-            <th>Address</th>
+                <h2>
+                    <?php echo htmlspecialchars($bookingID); ?>
+                </h2>
 
-            <td>
-                <?php echo nl2br(htmlspecialchars($address)); ?>
-            </td>
-        </tr>
+            </div>
 
 
-        <tr>
-            <th>State</th>
-
-            <td>
-                <?php echo htmlspecialchars($state); ?>
-            </td>
-        </tr>
+            <hr>
 
 
-        <tr>
-            <th>Total Cost</th>
+            <!-- CUSTOMER INFORMATION -->
 
-            <td class="total">
-                RM <?php echo number_format($totalCost, 2); ?>
-            </td>
-        </tr>
+            <div class="row mb-3">
 
-    </table>
+                <div class="col-md-4">
+                    <strong>Full Name</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($fullName); ?>
+                </div>
+
+            </div>
 
 
-    <!-- Logout -->
+            <div class="row mb-3">
 
-    <a href="logout.php" class="logout">
-        Logout
-    </a>
+                <div class="col-md-4">
+                    <strong>IC Number</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($icNumber); ?>
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Email</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($email); ?>
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Phone Number</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($phone); ?>
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Service Package</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($package); ?>
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Duration</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($duration); ?> day(s)
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Address</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo nl2br(htmlspecialchars($address)); ?>
+                </div>
+
+            </div>
+
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>State</strong>
+                </div>
+
+                <div class="col-md-8">
+                    <?php echo htmlspecialchars($state); ?>
+                </div>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- TOTAL -->
+
+            <div class="total-box">
+
+                <h4>Total Booking Cost</h4>
+
+                <h2>
+                    RM <?php echo number_format($totalCost, 2); ?>
+                </h2>
+
+            </div>
+
+
+            <!-- LOGOUT -->
+
+            <div class="text-center mt-4">
+
+                <a
+                    href="logout.php"
+                    class="btn btn-danger"
+                >
+                    Logout
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </div>
 
 </div>
+
+
+<footer class="footer">
+
+    <p>
+        Service Booking System &copy; 2026
+    </p>
+
+</footer>
+
 
 </body>
 
